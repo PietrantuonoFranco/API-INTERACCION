@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS  # Importa la extensión CORS
 
 app = Flask(__name__)
+CORS(app)  # Habilita CORS para toda la aplicación
 
 usuarios = [
     { "email": "admin@example.com", "password": "12345678" },
@@ -9,50 +11,50 @@ usuarios = [
 ]
 
 kinesiologos = [
-    { "nombre": "Dr. Smith", "disponible": True },
-    { "nombre": "Dr. Johnson", "disponible": False },
-    { "nombre": "Dr. Williams", "disponible": True },
-    { "nombre": "Dr. Brown", "disponible": False }
+    { "id": 1, "nombre": "Dra. Smith", "disponible": True, "especialidad" : "Traumatología" },
+    { "id": 2,"nombre": "Dr. Johnson", "disponible": False, "especialidad" : "Deportólogo"},
+    { "id": 3,"nombre": "Dr. Williams", "disponible": True, "especialidad" : "Ergonometría"},
+    { "id": 4,"nombre": "Dr. Brown", "disponible": False, "especialidad" : "Geriatría"}
 ]
 
-##PARA VERIFICAR SI CORRE!
+## PARA VERIFICAR SI CORRE!
 @app.route('/')
 def index():
     return jsonify({"status": "ok"})
 
-
-##DESCUENTOS
+## DESCUENTOS
 @app.route('/verificarUsuario', methods=['POST'])
 def verificarUsuario():
     data = request.json
     for i in usuarios:
         if i["email"] == data["email"] and i["password"] == data["password"]:
-            return jsonify({"status": "ok","Descuento": "0.3"})
+            return jsonify({"status": "ok", "Descuento": "0.3"})
+    return jsonify({"status": "error", "message": "Credenciales incorrectas"}), 401
 
-
-##KINESIOILOGOS
-@app.route('/agendarConsulta', methods=['POST'])
+## KINESIOLOGOS
+@app.route('/agendar-consulta', methods=['POST'])
 def agendarConsulta():
     data = request.json
     fecha = data.get("fecha")
-    kinesiologo = data.get("kinesiologo")
-    tema_consulta = data.get("tema_consulta")
+    horario = data.get("horario")
+    doctor = data.get("doctor")
+    tema_consulta = data.get("tipoConsulta")
     descripcion = data.get("descripcion")
+    paciente = data.get("paciente")
     
-    if not all([fecha, kinesiologo, tema_consulta, descripcion]):
+    if not all([fecha, horario, doctor, tema_consulta, descripcion, paciente]):
         return jsonify({"status": "error", "message": "Faltan datos"}), 400
     
-    # Verificar disponibilidad del kinesiologo
-    for k in kinesiologos:
-        if k["nombre"] == kinesiologo:
-            if not k["disponible"]:
-                return jsonify({"status": "error", "message": "Kinesiologo no disponible"}), 400
-            break
     else:
-        return jsonify({"status": "error", "message": "Kinesiologo no encontrado"}), 400
-    
-    # Aquí podrías agregar la lógica para guardar la consulta en una base de datos o similar
-    return jsonify({"status": "ok", "message": "Consulta agendada correctamente"})
+        return jsonify({"status": "ok", "message": "Consulta agendada correctamente", "dia": fecha, "horario": horario, "doctor" : doctor, "paciente" : paciente}), 200
+
+@app.route('/obtener-kinesiologos', methods=['GET'])
+def getKinesiologos():
+    return jsonify({
+        "status": "ok", 
+        "message": "Kinesiologos obtenidos exitosamente.",
+        "kinesiologos": kinesiologos
+    }), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
