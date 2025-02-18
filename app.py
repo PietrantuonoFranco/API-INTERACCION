@@ -28,8 +28,11 @@ def verificarUsuario():
     data = request.json
     for i in usuarios:
         if i["email"] == data["email"] and i["password"] == data["password"]:
-            return jsonify({"status": "ok", "Descuento": "0.3"})
-    return jsonify({"status": "error", "message": "Credenciales incorrectas"}), 401
+            return jsonify({"status": "Exitoso","descuento": "0.3"})
+        
+@app.route('/obtenerDescuento', methods=['GET'])
+def obtenerDescuento():
+    return jsonify({"descuento": "0.3"})
 
 ## KINESIOLOGOS
 @app.route('/agendar-consulta', methods=['POST'])
